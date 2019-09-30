@@ -1,0 +1,22 @@
+#!/bin/bash
+rm -rf res
+rm -rf ~/res 
+mkdir ~/res
+
+IFS=$'\n'
+for file in $(ls); do 
+echo "$file" >> ~/res/name.txt; #file name
+file -b --mime-type "$file" >> ~/res/mime.txt; #mime type
+mediainfo --Inform="General;%Duration/String3%" "$file" >> ~/res/duration.txt; #duration
+stat -c%y "$file"| sed 's/\(:[0-9][0-9]\)\.[0-9]\{9\}/\1/g' >> ~/res/modtime.txt; done #modified
+for file in $(ls -l | awk '{print $5}'); do echo "$file" >> ~/res/size.txt; done #size
+
+
+mv  ~/res ./
+cd res
+echo Name,"Size(bytes)","Modified(date-time-time zone)",MIME-type,Duration > info.ods
+paste -d ',' name.txt size.txt modtime.txt mime.txt duration.txt >> info.ods
+rm name.txt size.txt modtime.txt mime.txt duration.txt
+
+#To run this script by typing anywhere in the system copy the script in /usr/local/bin and make it executable. 
+#
