@@ -1,0 +1,31 @@
+#!/bin/bash
+rm -rf res
+rm -rf ~/res 
+mkdir ~/res
+
+function inform() {
+IFS=$'\n'
+for file in $(ls); do 
+	if [[ -d $file ]]; then
+		nextdir=$file
+		cd $nextdir
+		inform
+		cd ..; fi
+	if [[ -f $file ]]; then
+	echo "$file" >> ~/res/name.txt; #file name
+	file -b --mime-type "$file" >> ~/res/mime.txt; #mime type
+	mediainfo --Inform="General;%Duration/String3%" "$file" >> ~/res/duration.txt; #duration
+	mdate=$(stat -c%y $file)
+	echo ${mdate%.*} >> ~/res/modtime.txt  #modified
+	size=$(wc -c < $file)
+	printf "$size\n" >> ~/res/size.txt #size
+	fi 
+done
+}
+inform
+mv  ~/res ./
+cd res
+echo Name,"Size(bytes)",Modified,MIME-type,Duration > info.ods
+paste -d ',' name.txt size.txt modtime.txt mime.txt duration.txt >> info.ods
+rm name.txt modtime.txt mime.txt duration.txt size.txt
+xdg-open info.ods
