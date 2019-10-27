@@ -1,0 +1,26 @@
+#!/bin/bash
+rm -rf result.xls
+path=$(pwd)
+printf "Название файла\tДата Изменения\tРазмер\tMime\tДлительность\n" >> result.xls
+function inform() {
+IFS=$'\n'
+for file in $(ls) ; do 
+	if [[ -d $file ]]; then
+		nextdir=$file
+		cd $nextdir
+		inform
+		cd ..; fi
+	if [[ -f $file ]]; then
+	filename=$(echo $file) 
+	mimetype=$(file -b --mime-type $file)
+	duration=$(mediainfo --Inform="General;%Duration/String3%" "$file")
+	modified=$(stat -c%y $file) 
+	size=$(wc -c < $file) 
+	filepath=$(pwd)
+	cd "$path"
+	printf "$filename\t${modified%.*}\t$size\t$mimetype\t${duration%.*}\n" >> result.xls
+	cd "$filepath"
+	fi 
+done
+}
+inform
